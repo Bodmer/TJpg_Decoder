@@ -1,4 +1,4 @@
-// Example for library:
+// Adafruit_GFX compatible xample for library:
 // https://github.com/Bodmer/TJpg_Decoder
 
 // This example renders a Jpeg file that is stored in an array within Flash (program) memory
@@ -10,7 +10,7 @@
 // Include the jpeg decoder library
 #include <TJpg_Decoder.h>
 
-//ESP32   my setup 22
+//ESP32 example setup
 //*
 #define TFT_CS  27
 #define TFT_DC  26
@@ -18,7 +18,7 @@
 //#define SD_CS   4
 //*/
 
-//ESP8266 my setup 1b
+//ESP8266 example setup
 /*
 #define TFT_CS  D3
 #define TFT_DC  D8
@@ -26,25 +26,8 @@
 //#define SD_CS   4
 //*/
 
-#define TFT_BLACK       0x0000      /*   0,   0,   0 */
-#define TFT_NAVY        0x000F      /*   0,   0, 128 */
-#define TFT_DARKGREEN   0x03E0      /*   0, 128,   0 */
-#define TFT_DARKCYAN    0x03EF      /*   0, 128, 128 */
-#define TFT_MAROON      0x7800      /* 128,   0,   0 */
-#define TFT_PURPLE      0x780F      /* 128,   0, 128 */
-#define TFT_OLIVE       0x7BE0      /* 128, 128,   0 */
-#define TFT_LIGHTGREY   0xC618      /* 192, 192, 192 */
-#define TFT_DARKGREY    0x7BEF      /* 128, 128, 128 */
-#define TFT_BLUE        0x001F      /*   0,   0, 255 */
-#define TFT_GREEN       0x07E0      /*   0, 255,   0 */
-#define TFT_CYAN        0x07FF      /*   0, 255, 255 */
-#define TFT_RED         0xF800      /* 255,   0,   0 */
-#define TFT_MAGENTA     0xF81F      /* 255,   0, 255 */
-#define TFT_YELLOW      0xFFE0      /* 255, 255,   0 */
-#define TFT_WHITE       0xFFFF      /* 255, 255, 255 */
-#define TFT_ORANGE      0xFDA0      /* 255, 180,   0 */
-#define TFT_GREENYELLOW 0xB7E0      /* 180, 255,   0 */
-#define TFT_PINK        0xFC9F
+#define TFT_BLACK       0x0000
+#define TFT_RED         0xF800
 
 // Include the TFT library
 #include "SPI.h"
@@ -59,7 +42,7 @@ bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
    // Stop further decoding as image is running off bottom of screen
   if ( y >= tft.height() ) return 0;
 
-  // This function will clip the image block rendering automatically at the TFT boundaries
+  // In ILI9341 library this function clips the image block at TFT boundaries
   tft.drawRGBBitmap(x, y, bitmap, w, h);
 
   // Return 1 to decode next block
@@ -68,15 +51,12 @@ bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
 
 void setup()
 {
-
   Serial.begin(115200);
   Serial.println("\n\n Testing TJpg_Decoder library");
 
   // Initialise the TFT
   tft.begin();
-  tft.setTextColor(0xFFFF, 0x0000);
   tft.fillScreen(TFT_BLACK);
-  //tft.setSwapBytes(true); // We need to swap the colour bytes (endianess)
 
   // The jpeg image can be scaled by a factor of 1, 2, 4, or 8
   TJpgDec.setJpgScale(1);
