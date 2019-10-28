@@ -9,8 +9,11 @@
 #define JD_SZBUF        512 /* Size of stream input buffer */
 #define JD_FORMAT       1   /* Output pixel format 0:RGB888 (3 BYTE/pix), 1:RGB565 (1 WORD/pix) */
 #define JD_USE_SCALE    1   /* Use descaling feature for output */
-#define JD_TBLCLIP      0   /* Use table for saturation (might be a bit faster but increases 1K bytes of code size) */
-
+#ifdef ESP32 // Table gives no speed mprovement for ESP32
+  #define JD_TBLCLIP    0   /* Use table for saturation (might be a bit faster but increases 1K bytes of code size) */
+#else
+  #define JD_TBLCLIP    1   /* Use table for saturation (might be a bit faster but increases 1K bytes of code size) */
+#endif
 /*---------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
@@ -72,9 +75,8 @@ struct JDEC_s {
     uint16_t sz_pool;           /* Size of momory pool (bytes available) */
     uint16_t (*infunc)(JDEC*, uint8_t*, uint16_t);/* Pointer to jpeg stream input function */
     void* device;               /* Pointer to I/O device identifiler for the session */
+	uint8_t swap;               /* Added by Bodmer to control byte swapping */
 };
-
-
 
 /* TJpgDec API functions */
 JRESULT jd_prepare (JDEC*, uint16_t(*)(JDEC*,uint8_t*,uint16_t), void*, uint16_t, void*);

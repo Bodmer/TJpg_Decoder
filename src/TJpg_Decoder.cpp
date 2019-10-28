@@ -33,6 +33,14 @@ TJpg_Decoder::~TJpg_Decoder(){
 ** Function name:           setJpgScale
 ** Description:             Set the reduction scale factor (1, 2, 4 or 8)
 ***************************************************************************************/
+void TJpg_Decoder::setSwapBytes(bool swapBytes){
+  _swap = swapBytes;
+}
+
+/***************************************************************************************
+** Function name:           setJpgScale
+** Description:             Set the reduction scale factor (1, 2, 4 or 8)
+***************************************************************************************/
 void TJpg_Decoder::setJpgScale(uint8_t scaleFactor)
 {
   switch (scaleFactor)
@@ -159,16 +167,16 @@ JRESULT TJpg_Decoder::drawJpg(int32_t x, int32_t y, const char *pFilename){
 
 #if defined (ESP8266) || defined (ESP32)
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	if (*pFilename == '/')
+    if (*pFilename == '/')
 #endif
-	return drawFsJpg(x, y, pFilename);
+    return drawFsJpg(x, y, pFilename);
 #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	return drawSdJpg(x, y, pFilename);
+    return drawSdJpg(x, y, pFilename);
 #endif
 
-	return JDR_INP;
+    return JDR_INP;
 }
 
 /***************************************************************************************
@@ -180,16 +188,16 @@ JRESULT TJpg_Decoder::drawJpg(int32_t x, int32_t y, const String& pFilename){
 
 #if defined (ESP8266) || defined (ESP32)
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	if (pFilename.charAt(0) == '/')
+    if (pFilename.charAt(0) == '/')
 #endif
-	return drawFsJpg(x, y, pFilename);
+    return drawFsJpg(x, y, pFilename);
 #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	return drawSdJpg(x, y, pFilename);
+    return drawSdJpg(x, y, pFilename);
 #endif
 
-	return JDR_INP;
+    return JDR_INP;
 }
 
 /***************************************************************************************
@@ -201,16 +209,16 @@ JRESULT TJpg_Decoder::getJpgSize(uint16_t *w, uint16_t *h, const char *pFilename
 
 #if defined (ESP8266) || defined (ESP32)
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	if (*pFilename == '/')
+    if (*pFilename == '/')
 #endif
-	return getFsJpgSize(w, h, pFilename);
+    return getFsJpgSize(w, h, pFilename);
 #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	return getSdJpgSize(w, h, pFilename);
+    return getSdJpgSize(w, h, pFilename);
 #endif
 
-	return JDR_INP;
+    return JDR_INP;
 }
 
 /***************************************************************************************
@@ -222,16 +230,16 @@ JRESULT TJpg_Decoder::getJpgSize(uint16_t *w, uint16_t *h, const String& pFilena
 
 #if defined (ESP8266) || defined (ESP32)
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	if (pFilename.charAt(0) == '/')
+    if (pFilename.charAt(0) == '/')
 #endif
-	return getFsJpgSize(w, h, pFilename);
+    return getFsJpgSize(w, h, pFilename);
 #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
-	return getSdJpgSize(w, h, pFilename);
+    return getSdJpgSize(w, h, pFilename);
 #endif
 
-	return JDR_INP;
+    return JDR_INP;
 }
 
 #endif
@@ -252,7 +260,7 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, const char *pFilename) {
     return JDR_INP;
   }
 
-	return drawFsJpg(x, y, LittleFS.open( pFilename, "r"));
+    return drawFsJpg(x, y, LittleFS.open( pFilename, "r"));
 #else
   // Check if file exists
   if ( !SPIFFS.exists(pFilename) )
@@ -261,7 +269,7 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, const char *pFilename) {
     return JDR_INP;
   }
 
-	return drawFsJpg(x, y, SPIFFS.open( pFilename, "r"));
+    return drawFsJpg(x, y, SPIFFS.open( pFilename, "r"));
 #endif
 }
 
@@ -278,7 +286,7 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, const String& pFilename) {
     return JDR_INP;
   }
 
-	return drawFsJpg(x, y, LittleFS.open( pFilename, "r"));
+    return drawFsJpg(x, y, LittleFS.open( pFilename, "r"));
 #else
   // Check if file exists
   if ( !SPIFFS.exists(pFilename) )
@@ -287,7 +295,7 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, const String& pFilename) {
     return JDR_INP;
   }
 #endif
-	return drawFsJpg(x, y, SPIFFS.open( pFilename, "r"));
+    return drawFsJpg(x, y, SPIFFS.open( pFilename, "r"));
 }
 
 /***************************************************************************************
@@ -302,7 +310,9 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, fs::File inFile) {
   jpeg_x = x;
   jpeg_y = y;
 
-	jpgFile = inFile;
+  jdec.swap = _swap;
+
+  jpgFile = inFile;
 
   jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
 
@@ -314,7 +324,7 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, fs::File inFile) {
   // Close file
   if (jpgFile) jpgFile.close();
 
-	return jresult;
+  return jresult;
 
 }
 
@@ -332,7 +342,7 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, const char *pFilena
     return JDR_INP;
   }
 
-	return getFsJpgSize(w, h, LittleFS.open( pFilename, "r"));
+    return getFsJpgSize(w, h, LittleFS.open( pFilename, "r"));
 #else
   // Check if file exists
   if ( !SPIFFS.exists(pFilename) )
@@ -341,7 +351,7 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, const char *pFilena
     return JDR_INP;
   }
 
-	return getFsJpgSize(w, h, SPIFFS.open( pFilename, "r"));
+    return getFsJpgSize(w, h, SPIFFS.open( pFilename, "r"));
 #endif
 }
 
@@ -358,7 +368,7 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, const String& pFile
     return JDR_INP;
   }
 
-	return getFsJpgSize(w, h, LittleFS.open( pFilename, "r"));
+    return getFsJpgSize(w, h, LittleFS.open( pFilename, "r"));
 #else
   // Check if file exists
   if ( !SPIFFS.exists(pFilename) )
@@ -367,7 +377,7 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, const String& pFile
     return JDR_INP;
   }
 
-	return getFsJpgSize(w, h, SPIFFS.open( pFilename, "r"));
+    return getFsJpgSize(w, h, SPIFFS.open( pFilename, "r"));
 #endif
 }
 
@@ -384,7 +394,7 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, fs::File inFile) {
 
   jpg_source = TJPG_FS_FILE;
 
-	jpgFile = inFile;
+  jpgFile = inFile;
 
   jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
 
@@ -396,7 +406,7 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, fs::File inFile) {
   // Close file
   if (jpgFile) jpgFile.close();
 
-	return jresult;
+  return jresult;
 }
 
 #endif
@@ -418,7 +428,7 @@ JRESULT TJpg_Decoder::drawSdJpg(int32_t x, int32_t y, const char *pFilename) {
     return JDR_INP;
   }
 
-	return drawFsJpg(x, y, SD.open( pFilename, FILE_READ));
+    return drawFsJpg(x, y, SD.open( pFilename, FILE_READ));
 }
 
 /***************************************************************************************
@@ -434,7 +444,7 @@ JRESULT TJpg_Decoder::drawSdJpg(int32_t x, int32_t y, const String& pFilename) {
     return JDR_INP;
   }
 
-	return drawSdJpg(x, y, SD.open( pFilename, FILE_READ));
+    return drawSdJpg(x, y, SD.open( pFilename, FILE_READ));
 }
 
 /***************************************************************************************
@@ -449,7 +459,9 @@ JRESULT TJpg_Decoder::drawSdJpg(int32_t x, int32_t y, File inFile) {
   jpeg_x = x;
   jpeg_y = y;
 
-	jpgSdFile = inFile;
+  jdec.swap = _swap;
+
+  jpgSdFile = inFile;
 
   jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
 
@@ -461,7 +473,7 @@ JRESULT TJpg_Decoder::drawSdJpg(int32_t x, int32_t y, File inFile) {
   // Close file
   if (jpgSdFile) jpgSdFile.close();
 
-	return jresult;
+  return jresult;
 
 }
 
@@ -479,7 +491,7 @@ JRESULT TJpg_Decoder::getSdJpgSize(uint16_t *w, uint16_t *h, const char *pFilena
     return JDR_INP;
   }
 
-	return getSdJpgSize(w, h, SD.open( pFilename, FILE_READ));
+    return getSdJpgSize(w, h, SD.open( pFilename, FILE_READ));
 }
 
 /***************************************************************************************
@@ -495,7 +507,7 @@ JRESULT TJpg_Decoder::getSdJpgSize(uint16_t *w, uint16_t *h, const String& pFile
     return JDR_INP;
   }
 
-	return getSdJpgSize(w, h, SD.open( pFilename, FILE_READ));
+    return getSdJpgSize(w, h, SD.open( pFilename, FILE_READ));
 }
 
 /***************************************************************************************
@@ -511,7 +523,7 @@ JRESULT TJpg_Decoder::getSdJpgSize(uint16_t *w, uint16_t *h, File inFile) {
 
   jpg_source = TJPG_FS_FILE;
 
-	jpgFile = inFile;
+  jpgFile = inFile;
 
   jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
 
@@ -523,7 +535,7 @@ JRESULT TJpg_Decoder::getSdJpgSize(uint16_t *w, uint16_t *h, File inFile) {
   // Close file
   if (jpgFile) jpgFile.close();
 
-	return jresult;
+  return jresult;
 }
 
 #endif
@@ -543,6 +555,8 @@ JRESULT TJpg_Decoder::drawJpg(int32_t x, int32_t y, const uint8_t jpeg_data[], u
 
   jpeg_x = x;
   jpeg_y = y;
+
+  jdec.swap = _swap;
 
   // Analyse input data
   jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);

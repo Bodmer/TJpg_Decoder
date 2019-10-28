@@ -1095,7 +1095,7 @@ inline uint8_t BYTECLIP (
 )
 {
   if (val < 0) val = 0;
-  if (val > 255) val = 255;
+  else if (val > 255) val = 255; // else added by Bodmer to speed things up
 
   return (uint8_t)val;
 }
@@ -1661,12 +1661,24 @@ static JRESULT mcu_output (
     uint16_t w, *d = (uint16_t*)s;
     uint16_t n = rx * ry;
 
-    do {
-      w = (*s++ & 0xF8) << 8;   /* RRRRR----------- */
-      w |= (*s++ & 0xFC) << 3;  /* -----GGGGGG----- */
-      w |= *s++ >> 3;       /* -----------BBBBB */
-      *d++ = w;
-    } while (--n);
+    if (jd->swap)
+    {
+      do {
+        w = (*s++ & 0xF8) << 8;     // RRRRR-----------
+        w |= (*s++ & 0xFC) << 3;    // -----GGGGGG-----
+        w |= *s++ >> 3;             // -----------BBBBB
+        *d++ = (w << 8) | (w >> 8); // Swap bytes
+      }   while (--n);
+    }
+    else
+    {
+      do {
+        w = (*s++ & 0xF8) << 8;   // RRRRR-----------
+        w |= (*s++ & 0xFC) << 3;  // -----GGGGGG-----
+        w |= *s++ >> 3;           // -----------BBBBB
+        *d++ = w;
+      }   while (--n);
+    }
   }
 
   /* Output the RGB rectangular */
@@ -1939,6 +1951,5 @@ JRESULT jd_decomp (
 
   return rc;
 }
-
 
 #endif

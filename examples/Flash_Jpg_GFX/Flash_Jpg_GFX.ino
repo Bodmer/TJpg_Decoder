@@ -1,4 +1,4 @@
-// Adafruit_GFX compatible xample for library:
+// Adafruit_GFX compatible example for library:
 // https://github.com/Bodmer/TJpg_Decoder
 
 // This example renders a Jpeg file that is stored in an array within Flash (program) memory

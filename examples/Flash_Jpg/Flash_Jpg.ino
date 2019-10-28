@@ -43,10 +43,12 @@ void setup()
   tft.begin();
   tft.setTextColor(0xFFFF, 0x0000);
   tft.fillScreen(TFT_BLACK);
-  tft.setSwapBytes(true); // We need to swap the colour bytes (endianess)
 
   // The jpeg image can be scaled by a factor of 1, 2, 4, or 8
   TJpgDec.setJpgScale(1);
+
+  // The byte order can be swapped (set true for TFT_eSPI)
+  TJpgDec.setSwapBytes(true);
 
   // The decoder must be given the exact name of the rendering function above
   TJpgDec.setCallback(tft_output);
@@ -67,7 +69,7 @@ void loop()
   // Draw the image, top left at 0,0
   TJpgDec.drawJpg(0, 0, panda, sizeof(panda));
 
-  // How much time did rendering take (ESP8266 80MHz 285ms, 160MHz 160ms, ESP32 SPI 115ms, 8bit parallel 95ms
+  // How much time did rendering take (ESP8266 80MHz 262ms, 160MHz 149ms, ESP32 SPI 111ms, 8bit parallel 90ms
   t = millis() - t;
   Serial.print(t); Serial.println(" ms");
 

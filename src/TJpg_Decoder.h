@@ -97,6 +97,10 @@ public:
   JRESULT drawJpg(int32_t x, int32_t y, const uint8_t array[], uint32_t  array_size);
   JRESULT getJpgSize(uint16_t *w, uint16_t *h, const uint8_t array[], uint32_t  array_size);
 
+  void setSwapBytes(bool swap);
+
+  bool _swap = false;
+
   const uint8_t* array_data  = nullptr;
   uint32_t array_index = 0;
   uint32_t array_size  = 0;
