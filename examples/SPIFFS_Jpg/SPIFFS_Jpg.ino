@@ -81,7 +81,7 @@ void loop()
   // Draw the image, top left at 0,0
   TJpgDec.drawFsJpg(0, 0, "/panda.jpg");
 
-  // How much time did rendering take (ESP8266 80MHz 291ms, 160MHz 167ms, ESP32 SPI 125ms, 8bit parallel 105ms
+  // How much time did rendering take (ESP8266 80MHz 271ms, 160MHz 157ms, ESP32 SPI 120ms, 8bit parallel 105ms
   t = millis() - t;
   Serial.print(t); Serial.println(" ms");
 
