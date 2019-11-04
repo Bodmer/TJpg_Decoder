@@ -85,9 +85,9 @@ void setup()
   Serial.println();
 
   // This is for demoe purposes only so that file is fetched each time this is run
-  if (SPIFFS.exists("/rainbow.jpg") == true) {
+  if (SPIFFS.exists("/M81.jpg") == true) {
     Serial.println("For test only, removing file");
-    SPIFFS.remove("/rainbow.jpg");
+    SPIFFS.remove("/M81.jpg");
     //SPIFSS.remove("/F35.jpg");
   }
 }
@@ -101,7 +101,7 @@ void loop()
   uint32_t t = millis();
 
   // Fetch the jpg file from the specified URL, examples only, from imgur
-  bool loaded_ok = getFile("http://i.imgur.com/jZptbtY.jpg", "/rainbow.jpg"); // Note name preceded with "/"
+  bool loaded_ok = getFile("http://i.imgur.com/C77RWcq.jpg", "/M81.jpg"); // Note name preceded with "/"
   //bool loaded_ok = downloadFile("http://i.imgur.com/OnW2qOO.jpg", "/F35.jpg");
 
   t = millis() - t;
@@ -113,7 +113,7 @@ void loop()
   t = millis();
 
   // Now draw the SPIFFS file
-  TJpgDec.drawFsJpg(0, 0, "/rainbow.jpg");
+  TJpgDec.drawFsJpg(0, 0, "/M81.jpg");
   //TJpgDec.drawFsJpg(0, 0, "/F35.jpg");
 
   t = millis() - t;
