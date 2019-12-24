@@ -1,5 +1,7 @@
+#if defined (ESP32) || defined (ESP8266)
+  #define TJPGD_LOAD_SPIFFS
+#endif
 
-#define TJPGD_LOAD_SPIFFS
 #define TJPGD_LOAD_SD_LIBRARY
 
 #ifdef ESP6266

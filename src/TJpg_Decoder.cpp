@@ -428,7 +428,7 @@ JRESULT TJpg_Decoder::drawSdJpg(int32_t x, int32_t y, const char *pFilename) {
     return JDR_INP;
   }
 
-    return drawFsJpg(x, y, SD.open( pFilename, FILE_READ));
+    return drawSdJpg(x, y, SD.open( pFilename, FILE_READ));
 }
 
 /***************************************************************************************
@@ -523,7 +523,7 @@ JRESULT TJpg_Decoder::getSdJpgSize(uint16_t *w, uint16_t *h, File inFile) {
 
   jpg_source = TJPG_FS_FILE;
 
-  jpgFile = inFile;
+  jpgSdFile = inFile;
 
   jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
 
@@ -533,7 +533,7 @@ JRESULT TJpg_Decoder::getSdJpgSize(uint16_t *w, uint16_t *h, File inFile) {
   }
 
   // Close file
-  if (jpgFile) jpgFile.close();
+  if (jpgSdFile) jpgSdFile.close();
 
   return jresult;
 }
