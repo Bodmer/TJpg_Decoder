@@ -521,7 +521,7 @@ JRESULT TJpg_Decoder::getSdJpgSize(uint16_t *w, uint16_t *h, File inFile) {
   *w = 0;
   *h = 0;
 
-  jpg_source = TJPG_FS_FILE;
+  jpg_source = TJPG_SD_FILE;
 
   jpgSdFile = inFile;
 
