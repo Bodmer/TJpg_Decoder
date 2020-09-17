@@ -382,7 +382,7 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, const String& pFile
 }
 
 /***************************************************************************************
-** Function name:           drawFsJpg
+** Function name:           getFsJpgSize
 ** Description:             Get width and height of a jpg saved in SPIFFS
 ***************************************************************************************/
 JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, fs::File inFile) {
