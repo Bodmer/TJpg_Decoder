@@ -21,6 +21,8 @@
 #ifdef ESP8266
   #include <ESP8266WiFi.h>
   #include <ESP8266HTTPClient.h>
+  #include <ESP8266WiFiMulti.h>
+  #include <WiFiClientSecureBearSSL.h>
 #else
   #include "SPIFFS.h" // Required for ESP32 only
   #include <WiFi.h>
