@@ -12,12 +12,19 @@ bool getFile(String url, String filename) {
 
   // Check WiFi connection
   if ((WiFi.status() == WL_CONNECTED)) {
-    HTTPClient http;
 
     Serial.print("[HTTP] begin...\n");
 
+#ifdef ESP8266
+    std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
+    client -> setInsecure();
+    HTTPClient http;
+    http.begin(*client, url)/
+#else
+    HTTPClient http;
     // Configure server and url
     http.begin(url);
+#endif
 
     Serial.print("[HTTP] GET...\n");
     // Start connection and send HTTP header
