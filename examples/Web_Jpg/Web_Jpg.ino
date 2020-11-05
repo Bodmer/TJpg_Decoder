@@ -101,8 +101,8 @@ void loop()
   uint32_t t = millis();
 
   // Fetch the jpg file from the specified URL, examples only, from imgur
-  bool loaded_ok = getFile("http://i.imgur.com/C77RWcq.jpg", "/M81.jpg"); // Note name preceded with "/"
-  //bool loaded_ok = downloadFile("http://i.imgur.com/OnW2qOO.jpg", "/F35.jpg");
+  bool loaded_ok = getFile("https://i.imgur.com/C77RWcq.jpg", "/M81.jpg"); // Note name preceded with "/"
+  //bool loaded_ok = downloadFile("https://i.imgur.com/OnW2qOO.jpg", "/F35.jpg");
 
   t = millis() - t;
   if (loaded_ok) { Serial.print(t); Serial.println(" ms to download"); }
