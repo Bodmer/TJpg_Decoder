@@ -59,8 +59,8 @@ public:
   TJpg_Decoder();
   ~TJpg_Decoder();
 
-  static uint16_t jd_output(JDEC* jdec, void* bitmap, JRECT* jrect);
-  static uint16_t jd_input(JDEC* jdec, uint8_t* buf, uint16_t len);
+  static int jd_output(JDEC* jdec, void* bitmap, JRECT* jrect);
+  static unsigned int jd_input(JDEC* jdec, uint8_t* buf, unsigned int len);
 
   void setJpgScale(uint8_t scale);
   void setCallback(SketchCallback sketchCallback);

@@ -55,7 +55,7 @@ typedef struct {
 /* Decompressor object structure */
 typedef struct JDEC_s JDEC;
 struct JDEC_s {
-    uint16_t dctr;              /* Number of bytes available in the input buffer */
+    unsigned int dctr;          /* Number of bytes available in the input buffer */
     uint8_t* dptr;              /* Current data read ptr */
     uint8_t* inbuf;             /* Bit stream input buffer */
     uint8_t dmsk;               /* Current bit in the current read byte */
@@ -72,15 +72,15 @@ struct JDEC_s {
     void* workbuf;              /* Working buffer for IDCT and RGB output */
     uint8_t* mcubuf;            /* Working buffer for the MCU */
     void* pool;                 /* Pointer to available memory pool */
-    uint16_t sz_pool;           /* Size of momory pool (bytes available) */
-    uint16_t (*infunc)(JDEC*, uint8_t*, uint16_t);/* Pointer to jpeg stream input function */
+    unsigned int sz_pool;       /* Size of momory pool (bytes available) */
+    unsigned int (*infunc)(JDEC*, uint8_t*, unsigned int);/* Pointer to jpeg stream input function */
     void* device;               /* Pointer to I/O device identifiler for the session */
 	uint8_t swap;               /* Added by Bodmer to control byte swapping */
 };
 
 /* TJpgDec API functions */
-JRESULT jd_prepare (JDEC*, uint16_t(*)(JDEC*,uint8_t*,uint16_t), void*, uint16_t, void*);
-JRESULT jd_decomp (JDEC*, uint16_t(*)(JDEC*,void*,JRECT*), uint8_t);
+JRESULT jd_prepare (JDEC* jd, unsigned int (*infunc)(JDEC*,uint8_t*,unsigned int), void* pool, unsigned int sz_pool, void* dev);
+JRESULT jd_decomp (JDEC* jd, int (*outfunc)(JDEC*,void*,JRECT*), uint8_t scale);
 
 
 #ifdef __cplusplus

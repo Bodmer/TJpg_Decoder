@@ -75,7 +75,7 @@ void TJpg_Decoder::setCallback(SketchCallback sketchCallback)
 ** Function name:           jd_input (declared static)
 ** Description:             Called by tjpgd.c to get more data
 ***************************************************************************************/
-uint16_t TJpg_Decoder::jd_input(JDEC* jdec, uint8_t* buf, uint16_t len)
+unsigned int TJpg_Decoder::jd_input(JDEC* jdec, uint8_t* buf, unsigned int len)
 {
   TJpg_Decoder *thisPtr = TJpgDec.thisPtr;
   jdec = jdec; // Supress warning
@@ -138,7 +138,7 @@ uint16_t TJpg_Decoder::jd_input(JDEC* jdec, uint8_t* buf, uint16_t len)
 ** Description:             Called by tjpgd.c with an image block for rendering
 ***************************************************************************************/
 // Pass image block back to the sketch for rendering, may be a complete or partial MCU
-uint16_t TJpg_Decoder::jd_output(JDEC* jdec, void* bitmap, JRECT* jrect)
+int TJpg_Decoder::jd_output(JDEC* jdec, void* bitmap, JRECT* jrect)
 {
   // This is a static function so create a pointer to access other members of the class
   TJpg_Decoder *thisPtr = TJpgDec.thisPtr;
@@ -314,7 +314,7 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, fs::File inFile) {
 
   jpgFile = inFile;
 
-  jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
+  jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, (unsigned int)0);
 
   // Extract image and render
   if (jresult == JDR_OK) {

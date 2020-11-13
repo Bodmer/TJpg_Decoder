@@ -27,7 +27,7 @@
 / This is a free software that opened for education, research and commercial
 /  developments under license policy of following terms.
 /
-/  Copyright (C) 2019, ChaN, all right reserved.
+/  Copyright (C) 2020, ChaN, all right reserved.
 /
 / * The TJpgDec module is a free software and there is NO WARRANTY.
 / * No restriction on use. You can use, modify and redistribute it for
@@ -39,6 +39,7 @@
 / Feb 19, 2012 R0.01a Fixed decompression fails when scan starts with an escape seq.
 / Sep 03, 2012 R0.01b Added JD_TBLCLIP option.
 / Mar 16, 2019 R0.01c Supprted stdint.h.
+/ Jul 01, 2020 R0.01d Fixed wrong integer type usage.
 / *** Modified for Atmel AVR microcontrollers ***
 /----------------------------------------------------------------------------*/
 
@@ -87,7 +88,7 @@ PROGMEM static const uint16_t Ipsf[64] = {  /* See also aa_idct.png */
 
 #if JD_TBLCLIP
 
-#define BYTECLIP(v) pgm_read_byte(&Clip8[(uint16_t)(v) & 0x3FF])
+#define BYTECLIP(v) pgm_read_byte(&Clip8[(unsigned int)(v) & 0x3FF])
 
 PROGMEM static const uint8_t Clip8[1024] = {
   /* 0..255 */
@@ -131,7 +132,7 @@ PROGMEM static const uint8_t Clip8[1024] = {
 #else /* JD_TBLCLIP */
 
 inline uint8_t BYTECLIP (
-  int16_t val
+  int val
 )
 {
   if (val < 0) val = 0;
@@ -150,7 +151,7 @@ inline uint8_t BYTECLIP (
 
 static void* alloc_pool ( /* Pointer to allocated memory block (NULL:no memory available) */
   JDEC* jd,   /* Pointer to the decompressor object */
-  uint16_t nd   /* Number of bytes to allocate */
+  unsigned int nd   /* Number of bytes to allocate */
 )
 {
   char *rp = 0;
@@ -174,13 +175,13 @@ static void* alloc_pool ( /* Pointer to allocated memory block (NULL:no memory a
 /* Create de-quantization and prescaling tables with a DQT segment       */
 /*-----------------------------------------------------------------------*/
 
-static int create_qt_tbl (  /* 0:OK, !0:Failed */
+static JRESULT create_qt_tbl (  /* 0:OK, !0:Failed */
   JDEC* jd,       /* Pointer to the decompressor object */
   const uint8_t* data,  /* Pointer to the quantizer tables */
-  uint16_t ndata      /* Size of input data */
+  unsigned int ndata      /* Size of input data */
 )
 {
-  uint16_t i;
+  unsigned int i;
   uint8_t d, z;
   int32_t *pb;
 
@@ -210,13 +211,13 @@ static int create_qt_tbl (  /* 0:OK, !0:Failed */
 /* Create huffman code tables with a DHT segment                         */
 /*-----------------------------------------------------------------------*/
 
-static int create_huffman_tbl ( /* 0:OK, !0:Failed */
+static JRESULT create_huffman_tbl ( /* 0:OK, !0:Failed */
   JDEC* jd,         /* Pointer to the decompressor object */
   const uint8_t* data,    /* Pointer to the packed huffman tables */
-  uint16_t ndata        /* Size of input data */
+  unsigned int ndata        /* Size of input data */
 )
 {
-  uint16_t i, j, b, np, cls, num;
+  unsigned int i, j, b, np, cls, num;
   uint8_t d, *pb, *pd;
   uint16_t hc, *ph;
 
@@ -233,7 +234,7 @@ static int create_huffman_tbl ( /* 0:OK, !0:Failed */
     for (np = i = 0; i < 16; i++) {   /* Load number of patterns for 1 to 16-bit code */
       np += (pb[i] = *data++);    /* Get sum of code words for each code */
     }
-    ph = alloc_pool(jd, (uint16_t)(np * sizeof (uint16_t)));/* Allocate a memory block for the code word table */
+    ph = alloc_pool(jd, (unsigned int)(np * sizeof (uint16_t)));/* Allocate a memory block for the code word table */
     if (!ph) return JDR_MEM1;     /* Err: not enough memory */
     jd->huffcode[num][cls] = ph;
     hc = 0;
@@ -267,28 +268,29 @@ static int create_huffman_tbl ( /* 0:OK, !0:Failed */
 
 static int bitext ( /* >=0: extracted data, <0: error code */
   JDEC* jd,   /* Pointer to the decompressor object */
-  int nbit    /* Number of bits to extract (1 to 11) */
+  unsigned int nbit    /* Number of bits to extract (1 to 11) */
 )
 {
   uint8_t msk, s, *dp;
-  uint16_t dc, v, f;
+  unsigned int dc, v, f;
 
 
   msk = jd->dmsk; dc = jd->dctr; dp = jd->dptr; /* Bit mask, number of data available, read ptr */
   s = *dp; v = f = 0;
+
   do {
     if (!msk) {       /* Next byte? */
       if (!dc) {      /* No input data is available, re-fill input buffer */
         dp = jd->inbuf; /* Top of input buffer */
         dc = jd->infunc(jd, dp, JD_SZBUF);
-        if (!dc) return 0 - (int16_t)JDR_INP; /* Err: read error or wrong stream termination */
+        if (!dc) return 0 - (int)JDR_INP; /* Err: read error or wrong stream termination */
       } else {
         dp++;     /* Next data ptr */
       }
       dc--;       /* Decrement number of available bytes */
       if (f) {      /* In flag sequence? */
         f = 0;      /* Exit flag sequence */
-        if (*dp != 0) return 0 - (int16_t)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
+        if (*dp != 0) return 0 - (int)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
         *dp = s = 0xFF;     /* The flag is a data 0xFF */
       } else {
         s = *dp;        /* Get next data byte */
@@ -303,6 +305,7 @@ static int bitext ( /* >=0: extracted data, <0: error code */
     msk >>= 1;
     nbit--;
   } while (nbit);
+
   jd->dmsk = msk; jd->dctr = dc; jd->dptr = dp;
 
   return (int)v;
@@ -315,7 +318,7 @@ static int bitext ( /* >=0: extracted data, <0: error code */
 /* Extract a huffman decoded data from input stream                      */
 /*-----------------------------------------------------------------------*/
 
-static int16_t huffext (  /* >=0: decoded data, <0: error code */
+static int huffext (  /* >=0: decoded data, <0: error code */
   JDEC* jd,       /* Pointer to the decompressor object */
   const uint8_t* hbits, /* Pointer to the bit distribution table */
   const uint16_t* hcode,  /* Pointer to the code word table */
@@ -323,7 +326,7 @@ static int16_t huffext (  /* >=0: decoded data, <0: error code */
 )
 {
   uint8_t msk, s, *dp;
-  uint16_t dc, v, f, bl, nd;
+  unsigned int dc, v, f, bl, nd;
 
 
   msk = jd->dmsk; dc = jd->dctr; dp = jd->dptr; /* Bit mask, number of data available, read ptr */
@@ -334,14 +337,14 @@ static int16_t huffext (  /* >=0: decoded data, <0: error code */
       if (!dc) {  /* No input data is available, re-fill input buffer */
         dp = jd->inbuf; /* Top of input buffer */
         dc = jd->infunc(jd, dp, JD_SZBUF);
-        if (!dc) return 0 - (int16_t)JDR_INP; /* Err: read error or wrong stream termination */
+        if (!dc) return 0 - (int)JDR_INP; /* Err: read error or wrong stream termination */
       } else {
         dp++; /* Next data ptr */
       }
       dc--;   /* Decrement number of available bytes */
       if (f) {    /* In flag sequence? */
         f = 0;    /* Exit flag sequence */
-        if (*dp != 0) return 0 - (int16_t)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
+        if (*dp != 0) return 0 - (int)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
         *dp = s = 0xFF;     /* The flag is a data 0xFF */
       } else {
         s = *dp;        /* Get next data byte */
@@ -365,7 +368,7 @@ static int16_t huffext (  /* >=0: decoded data, <0: error code */
     bl--;
   } while (bl);
 
-  return 0 - (int16_t)JDR_FMT1; /* Err: code not found (may be collapted data) */
+  return 0 - (int)JDR_FMT1; /* Err: code not found (may be collapted data) */
 }
 
 
@@ -383,7 +386,7 @@ static void block_idct (
   const int32_t M13 = (int32_t)(1.41421*4096), M2 = (int32_t)(1.08239*4096), M4 = (int32_t)(2.61313*4096), M5 = (int32_t)(1.84776*4096);
   int32_t v0, v1, v2, v3, v4, v5, v6, v7;
   int32_t t10, t11, t12, t13;
-  uint16_t i;
+  int i;
 
   /* Process columns */
   for (i = 0; i < 8; i++) {
@@ -493,7 +496,7 @@ static JRESULT mcu_load (
 {
   int32_t *tmp = (int32_t*)jd->workbuf; /* Block working buffer for de-quantize and IDCT */
   int b, d, e;
-  uint16_t blk, nby, nbc, i, z, id, cmp;
+  unsigned int blk, nby, nbc, i, z, id, cmp;
   uint8_t *bp;
   const uint8_t *hb, *hd;
   const uint16_t *hc;
@@ -536,7 +539,7 @@ static JRESULT mcu_load (
       b = huffext(jd, hb, hc, hd);    /* Extract a huffman coded value (zero runs and bit length) */
       if (b == 0) break;          /* EOB? */
       if (b < 0) return 0 - b;      /* Err: invalid code or input error */
-      z = (uint16_t)b >> 4;       /* Number of leading zero elements */
+      z = (unsigned int)b >> 4;       /* Number of leading zero elements */
       if (z) {
         i += z;             /* Skip zero elements */
         if (i >= 64) return JDR_FMT1; /* Too long zero run */
@@ -572,14 +575,14 @@ static JRESULT mcu_load (
 
 static JRESULT mcu_output (
   JDEC* jd,   /* Pointer to the decompressor object */
-  uint16_t (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
-  uint16_t x,   /* MCU position in the image (left of the MCU) */
-  uint16_t y    /* MCU position in the image (top of the MCU) */
+  int (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
+  unsigned int x,   /* MCU position in the image (left of the MCU) */
+  unsigned int y    /* MCU position in the image (top of the MCU) */
 )
 {
-  const int16_t CVACC = (sizeof (int16_t) > 2) ? 1024 : 128;
-  uint16_t ix, iy, mx, my, rx, ry;
-  int16_t yy, cb, cr;
+  const int CVACC = (sizeof (int) > 2) ? 1024 : 128;
+  unsigned int ix, iy, mx, my, rx, ry;
+  int yy, cb, cr;
   uint8_t *py, *pc, *rgb24;
   JRECT rect;
 
@@ -621,15 +624,15 @@ static JRESULT mcu_output (
         yy = *py++;     /* Get Y component */
 
         /* Convert YCbCr to RGB */
-        *rgb24++ = /* R */ BYTECLIP(yy + ((int16_t)(1.402 * CVACC) * cr) / CVACC);
-        *rgb24++ = /* G */ BYTECLIP(yy - ((int16_t)(0.344 * CVACC) * cb + (int16_t)(0.714 * CVACC) * cr) / CVACC);
-        *rgb24++ = /* B */ BYTECLIP(yy + ((int16_t)(1.772 * CVACC) * cb) / CVACC);
+        *rgb24++ = /* R */ BYTECLIP(yy + ((int)(1.402 * CVACC) * cr) / CVACC);
+        *rgb24++ = /* G */ BYTECLIP(yy - ((int)(0.344 * CVACC) * cb + (int)(0.714 * CVACC) * cr) / CVACC);
+        *rgb24++ = /* B */ BYTECLIP(yy + ((int)(1.772 * CVACC) * cb) / CVACC);
       }
     }
 
     /* Descale the MCU rectangular if needed */
     if (JD_USE_SCALE && jd->scale) {
-      uint16_t x, y, r, g, b, s, w, a;
+      unsigned int x, y, r, g, b, s, w, a;
       uint8_t *op;
 
       /* Get averaged RGB value of each square correcponds to a pixel */
@@ -671,9 +674,9 @@ static JRESULT mcu_output (
         py += 64;
 
         /* Convert YCbCr to RGB */
-        *rgb24++ = /* R */ BYTECLIP(yy + ((int16_t)(1.402 * CVACC) * cr / CVACC));
-        *rgb24++ = /* G */ BYTECLIP(yy - ((int16_t)(0.344 * CVACC) * cb + (int16_t)(0.714 * CVACC) * cr) / CVACC);
-        *rgb24++ = /* B */ BYTECLIP(yy + ((int16_t)(1.772 * CVACC) * cb / CVACC));
+        *rgb24++ = /* R */ BYTECLIP(yy + ((int)(1.402 * CVACC) * cr / CVACC));
+        *rgb24++ = /* G */ BYTECLIP(yy - ((int)(0.344 * CVACC) * cb + (int)(0.714 * CVACC) * cr) / CVACC);
+        *rgb24++ = /* B */ BYTECLIP(yy + ((int)(1.772 * CVACC) * cb / CVACC));
       }
     }
   }
@@ -682,7 +685,7 @@ static JRESULT mcu_output (
   mx >>= jd->scale;
   if (rx < mx) {
     uint8_t *s, *d;
-    uint16_t x, y;
+    unsigned int x, y;
 
     s = d = (uint8_t*)jd->workbuf;
     for (y = 0; y < ry; y++) {
@@ -699,7 +702,7 @@ static JRESULT mcu_output (
   if (JD_FORMAT == 1) {
     uint8_t *s = (uint8_t*)jd->workbuf;
     uint16_t w, *d = (uint16_t*)s;
-    uint16_t n = rx * ry;
+    unsigned int n = rx * ry;
 
     do {
       w = (*s++ & 0xF8) << 8;   /* RRRRR----------- */
@@ -725,7 +728,7 @@ static JRESULT restart (
   uint16_t rstn /* Expected restert sequense number */
 )
 {
-  uint16_t i, dc;
+  unsigned int i, dc;
   uint16_t d;
   uint8_t *dp;
 
@@ -769,16 +772,16 @@ static JRESULT restart (
 
 JRESULT jd_prepare (
   JDEC* jd,     /* Blank decompressor object */
-  uint16_t (*infunc)(JDEC*, uint8_t*, uint16_t),  /* JPEG strem input function */
+  unsigned int (*infunc)(JDEC*, uint8_t*, unsigned int),  /* JPEG strem input function */
   void* pool,     /* Working buffer for the decompression session */
-  uint16_t sz_pool, /* Size of working buffer */
+  unsigned int sz_pool, /* Size of working buffer */
   void* dev     /* I/O device identifier for the session */
 )
 {
   uint8_t *seg, b;
   uint16_t marker;
   uint32_t ofs;
-  uint16_t n, i, j, len;
+  unsigned int n, i, j, len;
   JRESULT rc;
 
 
@@ -900,13 +903,13 @@ JRESULT jd_prepare (
       if (len < 256) len = 256;         /* but at least 256 byte is required for IDCT */
       jd->workbuf = alloc_pool(jd, len);      /* and it may occupy a part of following MCU working buffer for RGB output */
       if (!jd->workbuf) return JDR_MEM1;      /* Err: not enough memory */
-      jd->mcubuf = (uint8_t*)alloc_pool(jd, (uint16_t)((n + 2) * 64));  /* Allocate MCU working buffer */
+      jd->mcubuf = (uint8_t*)alloc_pool(jd, (unsigned int)((n + 2) * 64));  /* Allocate MCU working buffer */
       if (!jd->mcubuf) return JDR_MEM1;     /* Err: not enough memory */
 
       /* Pre-load the JPEG data to extract it from the bit stream */
       jd->dptr = seg; jd->dctr = 0; jd->dmsk = 0; /* Prepare to read bit stream */
       if (ofs %= JD_SZBUF) {            /* Align read offset to JD_SZBUF */
-        jd->dctr = jd->infunc(jd, seg + ofs, (uint16_t)(JD_SZBUF - ofs));
+        jd->dctr = jd->infunc(jd, seg + ofs, (unsigned int)(JD_SZBUF - ofs));
         jd->dptr = seg + ofs - 1;
       }
 
@@ -945,11 +948,11 @@ JRESULT jd_prepare (
 
 JRESULT jd_decomp (
   JDEC* jd,               /* Initialized decompression object */
-  uint16_t (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
+  int (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
   uint8_t scale             /* Output de-scaling factor (0 to 3) */
 )
 {
-  uint16_t x, y, mx, my;
+  unsigned int x, y, mx, my;
   uint16_t rst, rsc;
   JRESULT rc;
 
@@ -1001,6 +1004,7 @@ JRESULT jd_decomp (
 / Feb 19, 2012 R0.01a Fixed decompression fails when scan starts with an escape seq.
 / Sep 03, 2012 R0.01b Added JD_TBLCLIP option.
 / Mar 16, 2019 R0.01c Supprted stdint.h.
+/ Jul 01, 2020 R0.01d Fixed wrong integer type usage.
 /----------------------------------------------------------------------------*/
 
 #include "tjpgd.h"
@@ -1047,7 +1051,7 @@ static const uint16_t Ipsf[64] = {  /* See also aa_idct.png */
 
 #if JD_TBLCLIP
 
-#define BYTECLIP(v) Clip8[(uint16_t)(v) & 0x3FF]
+#define BYTECLIP(v) Clip8[(unsigned int)(v) & 0x3FF]
 
 static const uint8_t Clip8[1024] = {
   /* 0..255 */
@@ -1091,7 +1095,7 @@ static const uint8_t Clip8[1024] = {
 #else /* JD_TBLCLIP */
 
 inline uint8_t BYTECLIP (
-  int16_t val
+  int val
 )
 {
   if (val < 0) val = 0;
@@ -1110,7 +1114,7 @@ inline uint8_t BYTECLIP (
 
 static void* alloc_pool ( /* Pointer to allocated memory block (NULL:no memory available) */
   JDEC* jd,   /* Pointer to the decompressor object */
-  uint16_t nd   /* Number of bytes to allocate */
+  unsigned int nd   /* Number of bytes to allocate */
 )
 {
   char *rp = 0;
@@ -1134,13 +1138,13 @@ static void* alloc_pool ( /* Pointer to allocated memory block (NULL:no memory a
 /* Create de-quantization and prescaling tables with a DQT segment       */
 /*-----------------------------------------------------------------------*/
 
-static int create_qt_tbl (  /* 0:OK, !0:Failed */
+static JRESULT create_qt_tbl (  /* 0:OK, !0:Failed */
   JDEC* jd,       /* Pointer to the decompressor object */
   const uint8_t* data,  /* Pointer to the quantizer tables */
-  uint16_t ndata      /* Size of input data */
+  unsigned int ndata      /* Size of input data */
 )
 {
-  uint16_t i;
+  unsigned int i;
   uint8_t d, z;
   int32_t *pb;
 
@@ -1170,13 +1174,13 @@ static int create_qt_tbl (  /* 0:OK, !0:Failed */
 /* Create huffman code tables with a DHT segment                         */
 /*-----------------------------------------------------------------------*/
 
-static int create_huffman_tbl ( /* 0:OK, !0:Failed */
+static JRESULT create_huffman_tbl ( /* 0:OK, !0:Failed */
   JDEC* jd,         /* Pointer to the decompressor object */
   const uint8_t* data,    /* Pointer to the packed huffman tables */
-  uint16_t ndata        /* Size of input data */
+  unsigned int ndata        /* Size of input data */
 )
 {
-  uint16_t i, j, b, np, cls, num;
+  unsigned int i, j, b, np, cls, num;
   uint8_t d, *pb, *pd;
   uint16_t hc, *ph;
 
@@ -1193,7 +1197,7 @@ static int create_huffman_tbl ( /* 0:OK, !0:Failed */
     for (np = i = 0; i < 16; i++) {   /* Load number of patterns for 1 to 16-bit code */
       np += (pb[i] = *data++);    /* Get sum of code words for each code */
     }
-    ph = alloc_pool(jd, (uint16_t)(np * sizeof (uint16_t)));/* Allocate a memory block for the code word table */
+    ph = alloc_pool(jd, (unsigned int)(np * sizeof (uint16_t)));/* Allocate a memory block for the code word table */
     if (!ph) return JDR_MEM1;     /* Err: not enough memory */
     jd->huffcode[num][cls] = ph;
     hc = 0;
@@ -1227,28 +1231,29 @@ static int create_huffman_tbl ( /* 0:OK, !0:Failed */
 
 static int bitext ( /* >=0: extracted data, <0: error code */
   JDEC* jd,   /* Pointer to the decompressor object */
-  int nbit    /* Number of bits to extract (1 to 11) */
+  unsigned int nbit    /* Number of bits to extract (1 to 11) */
 )
 {
   uint8_t msk, s, *dp;
-  uint16_t dc, v, f;
+  unsigned int dc, v, f;
 
 
   msk = jd->dmsk; dc = jd->dctr; dp = jd->dptr; /* Bit mask, number of data available, read ptr */
   s = *dp; v = f = 0;
+
   do {
     if (!msk) {       /* Next byte? */
       if (!dc) {      /* No input data is available, re-fill input buffer */
         dp = jd->inbuf; /* Top of input buffer */
         dc = jd->infunc(jd, dp, JD_SZBUF);
-        if (!dc) return 0 - (int16_t)JDR_INP; /* Err: read error or wrong stream termination */
+        if (!dc) return 0 - (int)JDR_INP; /* Err: read error or wrong stream termination */
       } else {
         dp++;     /* Next data ptr */
       }
       dc--;       /* Decrement number of available bytes */
       if (f) {      /* In flag sequence? */
         f = 0;      /* Exit flag sequence */
-        if (*dp != 0) return 0 - (int16_t)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
+        if (*dp != 0) return 0 - (int)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
         *dp = s = 0xFF;     /* The flag is a data 0xFF */
       } else {
         s = *dp;        /* Get next data byte */
@@ -1263,6 +1268,7 @@ static int bitext ( /* >=0: extracted data, <0: error code */
     msk >>= 1;
     nbit--;
   } while (nbit);
+
   jd->dmsk = msk; jd->dctr = dc; jd->dptr = dp;
 
   return (int)v;
@@ -1275,7 +1281,7 @@ static int bitext ( /* >=0: extracted data, <0: error code */
 /* Extract a huffman decoded data from input stream                      */
 /*-----------------------------------------------------------------------*/
 
-static int16_t huffext (  /* >=0: decoded data, <0: error code */
+static int huffext (  /* >=0: decoded data, <0: error code */
   JDEC* jd,       /* Pointer to the decompressor object */
   const uint8_t* hbits, /* Pointer to the bit distribution table */
   const uint16_t* hcode,  /* Pointer to the code word table */
@@ -1283,7 +1289,7 @@ static int16_t huffext (  /* >=0: decoded data, <0: error code */
 )
 {
   uint8_t msk, s, *dp;
-  uint16_t dc, v, f, bl, nd;
+  unsigned int dc, v, f, bl, nd;
 
 
   msk = jd->dmsk; dc = jd->dctr; dp = jd->dptr; /* Bit mask, number of data available, read ptr */
@@ -1294,14 +1300,14 @@ static int16_t huffext (  /* >=0: decoded data, <0: error code */
       if (!dc) {  /* No input data is available, re-fill input buffer */
         dp = jd->inbuf; /* Top of input buffer */
         dc = jd->infunc(jd, dp, JD_SZBUF);
-        if (!dc) return 0 - (int16_t)JDR_INP; /* Err: read error or wrong stream termination */
+        if (!dc) return 0 - (int)JDR_INP; /* Err: read error or wrong stream termination */
       } else {
         dp++; /* Next data ptr */
       }
       dc--;   /* Decrement number of available bytes */
       if (f) {    /* In flag sequence? */
         f = 0;    /* Exit flag sequence */
-        if (*dp != 0) return 0 - (int16_t)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
+        if (*dp != 0) return 0 - (int)JDR_FMT1; /* Err: unexpected flag is detected (may be collapted data) */
         *dp = s = 0xFF;     /* The flag is a data 0xFF */
       } else {
         s = *dp;        /* Get next data byte */
@@ -1325,7 +1331,7 @@ static int16_t huffext (  /* >=0: decoded data, <0: error code */
     bl--;
   } while (bl);
 
-  return 0 - (int16_t)JDR_FMT1; /* Err: code not found (may be collapted data) */
+  return 0 - (int)JDR_FMT1; /* Err: code not found (may be collapted data) */
 }
 
 
@@ -1343,7 +1349,7 @@ static void block_idct (
   const int32_t M13 = (int32_t)(1.41421*4096), M2 = (int32_t)(1.08239*4096), M4 = (int32_t)(2.61313*4096), M5 = (int32_t)(1.84776*4096);
   int32_t v0, v1, v2, v3, v4, v5, v6, v7;
   int32_t t10, t11, t12, t13;
-  uint16_t i;
+  int i;
 
   /* Process columns */
   for (i = 0; i < 8; i++) {
@@ -1453,7 +1459,7 @@ static JRESULT mcu_load (
 {
   int32_t *tmp = (int32_t*)jd->workbuf; /* Block working buffer for de-quantize and IDCT */
   int b, d, e;
-  uint16_t blk, nby, nbc, i, z, id, cmp;
+  unsigned int blk, nby, nbc, i, z, id, cmp;
   uint8_t *bp;
   const uint8_t *hb, *hd;
   const uint16_t *hc;
@@ -1496,7 +1502,7 @@ static JRESULT mcu_load (
       b = huffext(jd, hb, hc, hd);    /* Extract a huffman coded value (zero runs and bit length) */
       if (b == 0) break;          /* EOB? */
       if (b < 0) return 0 - b;      /* Err: invalid code or input error */
-      z = (uint16_t)b >> 4;       /* Number of leading zero elements */
+      z = (unsigned int)b >> 4;       /* Number of leading zero elements */
       if (z) {
         i += z;             /* Skip zero elements */
         if (i >= 64) return JDR_FMT1; /* Too long zero run */
@@ -1532,14 +1538,14 @@ static JRESULT mcu_load (
 
 static JRESULT mcu_output (
   JDEC* jd,   /* Pointer to the decompressor object */
-  uint16_t (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
-  uint16_t x,   /* MCU position in the image (left of the MCU) */
-  uint16_t y    /* MCU position in the image (top of the MCU) */
+  int (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
+  unsigned int x,   /* MCU position in the image (left of the MCU) */
+  unsigned int y    /* MCU position in the image (top of the MCU) */
 )
 {
-  const int16_t CVACC = (sizeof (int16_t) > 2) ? 1024 : 128;
-  uint16_t ix, iy, mx, my, rx, ry;
-  int16_t yy, cb, cr;
+  const int CVACC = (sizeof (int) > 2) ? 1024 : 128;
+  unsigned int ix, iy, mx, my, rx, ry;
+  int yy, cb, cr;
   uint8_t *py, *pc, *rgb24;
   JRECT rect;
 
@@ -1581,15 +1587,15 @@ static JRESULT mcu_output (
         yy = *py++;     /* Get Y component */
 
         /* Convert YCbCr to RGB */
-        *rgb24++ = /* R */ BYTECLIP(yy + ((int16_t)(1.402 * CVACC) * cr) / CVACC);
-        *rgb24++ = /* G */ BYTECLIP(yy - ((int16_t)(0.344 * CVACC) * cb + (int16_t)(0.714 * CVACC) * cr) / CVACC);
-        *rgb24++ = /* B */ BYTECLIP(yy + ((int16_t)(1.772 * CVACC) * cb) / CVACC);
+        *rgb24++ = /* R */ BYTECLIP(yy + ((int)(1.402 * CVACC) * cr) / CVACC);
+        *rgb24++ = /* G */ BYTECLIP(yy - ((int)(0.344 * CVACC) * cb + (int)(0.714 * CVACC) * cr) / CVACC);
+        *rgb24++ = /* B */ BYTECLIP(yy + ((int)(1.772 * CVACC) * cb) / CVACC);
       }
     }
 
     /* Descale the MCU rectangular if needed */
     if (JD_USE_SCALE && jd->scale) {
-      uint16_t x, y, r, g, b, s, w, a;
+      unsigned int x, y, r, g, b, s, w, a;
       uint8_t *op;
 
       /* Get averaged RGB value of each square correcponds to a pixel */
@@ -1631,9 +1637,9 @@ static JRESULT mcu_output (
         py += 64;
 
         /* Convert YCbCr to RGB */
-        *rgb24++ = /* R */ BYTECLIP(yy + ((int16_t)(1.402 * CVACC) * cr / CVACC));
-        *rgb24++ = /* G */ BYTECLIP(yy - ((int16_t)(0.344 * CVACC) * cb + (int16_t)(0.714 * CVACC) * cr) / CVACC);
-        *rgb24++ = /* B */ BYTECLIP(yy + ((int16_t)(1.772 * CVACC) * cb / CVACC));
+        *rgb24++ = /* R */ BYTECLIP(yy + ((int)(1.402 * CVACC) * cr / CVACC));
+        *rgb24++ = /* G */ BYTECLIP(yy - ((int)(0.344 * CVACC) * cb + (int)(0.714 * CVACC) * cr) / CVACC);
+        *rgb24++ = /* B */ BYTECLIP(yy + ((int)(1.772 * CVACC) * cb / CVACC));
       }
     }
   }
@@ -1642,7 +1648,7 @@ static JRESULT mcu_output (
   mx >>= jd->scale;
   if (rx < mx) {
     uint8_t *s, *d;
-    uint16_t x, y;
+    unsigned int x, y;
 
     s = d = (uint8_t*)jd->workbuf;
     for (y = 0; y < ry; y++) {
@@ -1659,7 +1665,7 @@ static JRESULT mcu_output (
   if (JD_FORMAT == 1) {
     uint8_t *s = (uint8_t*)jd->workbuf;
     uint16_t w, *d = (uint16_t*)s;
-    uint16_t n = rx * ry;
+    unsigned int n = rx * ry;
 
     if (jd->swap)
     {
@@ -1697,7 +1703,7 @@ static JRESULT restart (
   uint16_t rstn /* Expected restert sequense number */
 )
 {
-  uint16_t i, dc;
+  unsigned int i, dc;
   uint16_t d;
   uint8_t *dp;
 
@@ -1741,16 +1747,16 @@ static JRESULT restart (
 
 JRESULT jd_prepare (
   JDEC* jd,     /* Blank decompressor object */
-  uint16_t (*infunc)(JDEC*, uint8_t*, uint16_t),  /* JPEG strem input function */
+  unsigned int (*infunc)(JDEC*, uint8_t*, unsigned int),  /* JPEG strem input function */
   void* pool,     /* Working buffer for the decompression session */
-  uint16_t sz_pool, /* Size of working buffer */
+  unsigned int sz_pool, /* Size of working buffer */
   void* dev     /* I/O device identifier for the session */
 )
 {
   uint8_t *seg, b;
   uint16_t marker;
   uint32_t ofs;
-  uint16_t n, i, j, len;
+  unsigned int n, i, j, len;
   JRESULT rc;
 
 
@@ -1872,13 +1878,13 @@ JRESULT jd_prepare (
       if (len < 256) len = 256;         /* but at least 256 byte is required for IDCT */
       jd->workbuf = alloc_pool(jd, len);      /* and it may occupy a part of following MCU working buffer for RGB output */
       if (!jd->workbuf) return JDR_MEM1;      /* Err: not enough memory */
-      jd->mcubuf = (uint8_t*)alloc_pool(jd, (uint16_t)((n + 2) * 64));  /* Allocate MCU working buffer */
+      jd->mcubuf = (uint8_t*)alloc_pool(jd, (unsigned int)((n + 2) * 64));  /* Allocate MCU working buffer */
       if (!jd->mcubuf) return JDR_MEM1;     /* Err: not enough memory */
 
       /* Pre-load the JPEG data to extract it from the bit stream */
       jd->dptr = seg; jd->dctr = 0; jd->dmsk = 0; /* Prepare to read bit stream */
       if (ofs %= JD_SZBUF) {            /* Align read offset to JD_SZBUF */
-        jd->dctr = jd->infunc(jd, seg + ofs, (uint16_t)(JD_SZBUF - ofs));
+        jd->dctr = jd->infunc(jd, seg + ofs, (unsigned int)(JD_SZBUF - ofs));
         jd->dptr = seg + ofs - 1;
       }
 
@@ -1917,11 +1923,11 @@ JRESULT jd_prepare (
 
 JRESULT jd_decomp (
   JDEC* jd,               /* Initialized decompression object */
-  uint16_t (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
+  int (*outfunc)(JDEC*, void*, JRECT*),  /* RGB output function */
   uint8_t scale             /* Output de-scaling factor (0 to 3) */
 )
 {
-  uint16_t x, y, mx, my;
+  unsigned int x, y, mx, my;
   uint16_t rst, rsc;
   JRESULT rc;
 
