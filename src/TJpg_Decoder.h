@@ -21,7 +21,15 @@ https://github.com/Bodmer/TJpg_Decoder
     #include <pgmspace.h>
 
     #ifdef USE_LITTLEFS
-      #include <LittleFS.h>
+      #ifdef ESP8266
+        #include <LittleFS.h>
+      #endif
+      #ifdef ESP32
+        #include <FS.h>
+
+        #define LittleFS LITTLEFS
+        #include <LITTLEFS.h>
+      #endif
     #else
       #define TJPGD_LOAD_SPIFFS
       #define FS_NO_GLOBALS

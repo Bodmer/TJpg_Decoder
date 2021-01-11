@@ -294,8 +294,8 @@ JRESULT TJpg_Decoder::drawFsJpg(int32_t x, int32_t y, const String& pFilename) {
     Serial.println(F("Jpeg file not found"));
     return JDR_INP;
   }
+  return drawFsJpg(x, y, SPIFFS.open( pFilename, "r"));
 #endif
-    return drawFsJpg(x, y, SPIFFS.open( pFilename, "r"));
 }
 
 /***************************************************************************************
