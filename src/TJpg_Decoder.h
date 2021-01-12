@@ -20,12 +20,24 @@ https://github.com/Bodmer/TJpg_Decoder
   #if defined (ESP8266) || defined (ESP32)
     #include <pgmspace.h>
 
-    #define TJPGD_LOAD_SPIFFS
-    #define FS_NO_GLOBALS
-    #include <FS.h>
+    #ifdef USE_LITTLEFS
+      #ifdef ESP8266
+        #include <LittleFS.h>
+      #endif
+      #ifdef ESP32
+        #include <FS.h>
 
-    #ifdef ESP32
-      #include "SPIFFS.h" // ESP32 only
+        #define LittleFS LITTLEFS
+        #include <LITTLEFS.h>
+      #endif
+    #else
+      #define TJPGD_LOAD_SPIFFS
+      #define FS_NO_GLOBALS
+      #include <FS.h>
+
+      #ifdef ESP32
+        #include "SPIFFS.h" // ESP32 only
+      #endif
     #endif
   #endif
 
