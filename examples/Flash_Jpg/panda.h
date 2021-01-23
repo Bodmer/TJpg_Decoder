@@ -16,8 +16,7 @@
 
    };
 
-    Change the name of the array. Make sure the original jpeg is less than 32Kbyes
-    as there is an array size limit imposed by the Arduino IDE!
+    Change the name of the array
 
 
 */
