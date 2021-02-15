@@ -19,7 +19,7 @@ bool getFile(String url, String filename) {
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     client -> setInsecure();
     HTTPClient http;
-    http.begin(*client, url)/
+    http.begin(*client, url);
 #else
     HTTPClient http;
     // Configure server and url
