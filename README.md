@@ -7,7 +7,7 @@ The library works on the Arduino Due, ESP32 and ESP8266 (e.g. NodeMCU 1.0).
 
 Jpeg files in the "Progressive" format (where image data is compressed in multiple passes with progressively higher detail) are not supported since this would require much more memory, or too many Inverse Discrete Cosine Transform's for typical embedded systems.
 
-When storing the jpeg in a memory array bear in mind the Arduino has a maximum 32767 byte limit for the maximum size of an array (32 KBytes minus 1 byte).
+When storing the jpeg in a memory array bear in mind that some Arduino boards have a maximum 32767 byte limit for the maximum size of an array (32 KBytes minus 1 byte).
 
 The decompression of Jpeg images needs more RAM than an UNO provides, thus this library is targetted at processors with more RAM. The library has been tested with ESP8266/ESP32 based boards.
 
