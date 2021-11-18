@@ -27,8 +27,8 @@ https://github.com/Bodmer/TJpg_Decoder
       #ifdef ESP32
         #include <FS.h>
 
-        #define LittleFS LITTLEFS
-        #include <LITTLEFS.h>
+        //#define LittleFS LITTLEFS
+        #include <LittleFS.h>
       #endif
     #else
       #define TJPGD_LOAD_SPIFFS
