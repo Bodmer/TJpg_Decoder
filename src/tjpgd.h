@@ -10,7 +10,7 @@
 #define JD_FORMAT       1   /* Output pixel format 0:RGB888 (3 BYTE/pix), 1:RGB565 (1 WORD/pix) */
 #define JD_USE_SCALE    1   /* Use descaling feature for output */
 #ifdef ESP32 // Table gives no speed mprovement for ESP32
-  #define JD_TBLCLIP    0   /* Use table for saturation (might be a bit faster but increases 1K bytes of code size) */
+  #define JD_TBLCLIP    1   /* Use table for saturation (might be a bit faster but increases 1K bytes of code size) */
 #else
   #define JD_TBLCLIP    1   /* Use table for saturation (might be a bit faster but increases 1K bytes of code size) */
 #endif
