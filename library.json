@@ -1,7 +1,7 @@
 {
   "name": "TJpg_Decoder",
 
-  "version": "1.0.1",
+  "version": "1.0.2",
 
   "keywords": "jpeg, jpg, tft, display, STM32, ESP8266, ESP32",
   "description": "A JPEG decoder library based on Tiny JPEG Decompressor",

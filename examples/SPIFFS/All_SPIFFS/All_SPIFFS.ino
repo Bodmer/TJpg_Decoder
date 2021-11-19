@@ -68,6 +68,7 @@ void loop()
   File root = SPIFFS.open("/");
   while (File file = root.openNextFile()) {
     String strname = file.name();
+    strname = "/" + strname;
     // If it is not a directory and filename ends in .jpg then load it
     if (!file.isDirectory() && strname.endsWith(".jpg")) {
       loadFile(strname.c_str());
@@ -80,6 +81,7 @@ void loop()
   fs::Dir directory = SPIFFS.openDir("/");
   while (directory.next()) {
     String strname = directory.fileName();
+    strname = "/" + strname;
     // If filename ends in .jpg then load it
     if (strname.endsWith(".jpg")) {
       loadFile(strname.c_str());

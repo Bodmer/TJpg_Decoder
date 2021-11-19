@@ -19,26 +19,12 @@ https://github.com/Bodmer/TJpg_Decoder
 
   #if defined (ESP8266) || defined (ESP32)
     #include <pgmspace.h>
-
-    #ifdef USE_LITTLEFS
-      #ifdef ESP8266
-        #include <LittleFS.h>
-      #endif
-      #ifdef ESP32
-        #include <FS.h>
-
-        //#define LittleFS LITTLEFS
-        #include <LittleFS.h>
-      #endif
-    #else
-      #define TJPGD_LOAD_SPIFFS
-      #define FS_NO_GLOBALS
-      #include <FS.h>
-
-      #ifdef ESP32
-        #include "SPIFFS.h" // ESP32 only
-      #endif
+    #include <FS.h>
+    #include <LittleFS.h>
+    #ifdef ESP32
+       #include "SPIFFS.h" // ESP32 only
     #endif
+    #define TJPGD_LOAD_FFS
   #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
@@ -62,7 +48,7 @@ private:
   File jpgSdFile;
 #endif
 
-#ifdef TJPGD_LOAD_SPIFFS
+#ifdef TJPGD_LOAD_FFS
   fs::File jpgFile;
 #endif
 
@@ -78,7 +64,7 @@ public:
   void setCallback(SketchCallback sketchCallback);
 
 
-#if defined (TJPGD_LOAD_SD_LIBRARY) || defined (TJPGD_LOAD_SPIFFS)
+#if defined (TJPGD_LOAD_SD_LIBRARY) || defined (TJPGD_LOAD_FFS)
   JRESULT drawJpg (int32_t x, int32_t y, const char *pFilename);
   JRESULT drawJpg (int32_t x, int32_t y, const String& pFilename);
 
@@ -96,13 +82,13 @@ public:
   JRESULT getSdJpgSize(uint16_t *w, uint16_t *h, File inFile);
 #endif
 
-#ifdef TJPGD_LOAD_SPIFFS
-  JRESULT drawFsJpg (int32_t x, int32_t y, const char *pFilename);
-  JRESULT drawFsJpg (int32_t x, int32_t y, const String& pFilename);
+#ifdef TJPGD_LOAD_FFS
+  JRESULT drawFsJpg (int32_t x, int32_t y, const char *pFilename, fs::FS &fs = SPIFFS);
+  JRESULT drawFsJpg (int32_t x, int32_t y, const String& pFilename, fs::FS &fs = SPIFFS);
   JRESULT drawFsJpg (int32_t x, int32_t y, fs::File inFile);
 
-  JRESULT getFsJpgSize(uint16_t *w, uint16_t *h, const char *pFilename);
-  JRESULT getFsJpgSize(uint16_t *w, uint16_t *h, const String& pFilename);
+  JRESULT getFsJpgSize(uint16_t *w, uint16_t *h, const char *pFilename, fs::FS &fs = SPIFFS);
+  JRESULT getFsJpgSize(uint16_t *w, uint16_t *h, const String& pFilename, fs::FS &fs = SPIFFS);
   JRESULT getFsJpgSize(uint16_t *w, uint16_t *h, fs::File inFile);
 #endif
 
