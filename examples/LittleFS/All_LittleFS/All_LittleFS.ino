@@ -2,13 +2,13 @@
 // Example for library:
 // https://github.com/Bodmer/TJpg_Decoder
 
-// This example is for an ESP8266 or ESP32, it renders all Jpeg files
-// found in LittleFS. The test images are in the sketch "data" folder
-// (press Ctrl+K to see it). You can add more images of your own to
-// the Data folder.
+// This example if for processors with LittleFS capability (e.g. RP2040,
+// ESP32, ESP8266). It renders a Jpeg file that is stored in a LittleFS
+// file.
 
-// You must upload the images to LittleFS using the ESP8266 or ESP32
-// Arduino IDE Sketch Data Upload menu option.
+// The test image is in the sketch "data" folder (press Ctrl+K to see it).
+// You must upload the image to LittleFS using the Arduino IDE Tools Data
+// Upload menu option (you may need to install extra tools for that).
 
 // Include the jpeg decoder library
 #include <TJpg_Decoder.h>
@@ -61,7 +61,7 @@ void setup()
 //====================================================================================
 void loop()
 {
-  File root = LittleFS.open("/");
+  File root = LittleFS.open("/", "r");
   while (File file = root.openNextFile()) {
     String strname = file.name();
     strname = "/" + strname;

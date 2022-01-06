@@ -1,4 +1,4 @@
-#if defined (ESP32) || defined (ESP8266)
+#if defined (ESP32) || defined (ESP8266) || (ARDUINO_ARCH_RP2040)  || defined (ARDUINO_ARCH_MBED)
   #define TJPGD_LOAD_FFS
 #endif
 
