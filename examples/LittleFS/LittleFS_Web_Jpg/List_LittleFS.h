@@ -10,7 +10,7 @@ void listLittleFS(void) {
   Serial.println(F("  File name                              Size"));
   Serial.println(FPSTR(line));
 
-  fs::File root = LittleFS.open("/");
+  fs::File root = LittleFS.open("/", "r");
   if (!root) {
     Serial.println(F("Failed to open directory"));
     return;
