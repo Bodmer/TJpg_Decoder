@@ -328,13 +328,13 @@ JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, const char *pFilena
 ***************************************************************************************/
 JRESULT TJpg_Decoder::getFsJpgSize(uint16_t *w, uint16_t *h, const String& pFilename, fs::FS &fs) {
   // Check if file exists
-  if ( !SPIFFS.exists(pFilename) )
+  if ( !fs.exists(pFilename) )
   {
     Serial.println(F("Jpeg file not found"));
     return JDR_INP;
   }
 
-    return getFsJpgSize(w, h, SPIFFS.open( pFilename, "r"));
+    return getFsJpgSize(w, h, fs.open( pFilename, "r"));
 }
 
 /***************************************************************************************
