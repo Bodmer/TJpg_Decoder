@@ -25,6 +25,11 @@ https://github.com/Bodmer/TJpg_Decoder
        #include "SPIFFS.h" // ESP32 only
     #endif
     #define TJPGD_LOAD_FFS
+  #elif defined (ARDUINO_ARCH_RP2040)
+    #include <FS.h>
+    #include <LittleFS.h>
+    #define SPIFFS LittleFS
+    #define TJPGD_LOAD_FFS
   #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
