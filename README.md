@@ -1,9 +1,9 @@
 Arduino TJpg_Decoder library
 ===========
 
-This Arduino library supports the rendering of Jpeg files stored both on SD card and in arrays within program memory (FLASH) onto a TFT display. In addition images stored in the SPIFFS and LittleFS Flash filing systems or alternativemly "PROGMEM" arrays can be used.
+This Arduino library supports the rendering of Jpeg files stored both on SD card and in arrays within program memory (FLASH) onto a TFT display. In addition images stored in the SPIFFS (ESP32, ESP8266) and LittleFS (ESP32, ESP8266, RP2040) Flash filing systems or alternativemly "PROGMEM" arrays can be used.
 
-The library has been tested on the Arduino Due, ESP32 and ESP8266 (e.g. NodeMCU 1.0), STM32 and RP2040 processors. Other processors should work too if they have sufficient memory..
+The library has been tested on the Arduino Due, ESP32 and ESP8266 (e.g. NodeMCU 1.0), STM32 and RP2040 processors. Other processors should work too if they have sufficient memory. Use with the ESP32 requires Arduino board package 2.0.0 or later.
 
 Jpeg files in the "Progressive" format (where image data is compressed in multiple passes with progressively higher detail) are not supported since this would require much more memory, or too many Inverse Discrete Cosine Transform's for typical embedded systems.
 
