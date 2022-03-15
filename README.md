@@ -9,7 +9,8 @@ Jpeg files in the "Progressive" format (where image data is compressed in multip
 
 When storing the jpeg in a memory array bear in mind that some Arduino boards have a maximum 32767 byte limit for the maximum size of an array (32 KBytes minus 1 byte).
 
-The decompression of Jpeg images needs more RAM than an UNO provides, thus this library is targetted at processors with more RAM.
+The decompression of Jpeg images needs more RAM than an UNO provides, thus this library is targetted at processors with more RAM. The decoder has a very small memory footprint, typically 3.5K Bytes of RAM (for workspace, Independent of Image Dimensions) and 3.5-8.5K Bytes of ROM for text and constants.
+
 
 On a Mega the number of images stored in FLASH must be limited because it they are large enough to push the executable code start over the 64K 16 bit address limit then the Mega will fail to boot even though the sketch compiles and uploads correctly. This is a limitation imposed by the Arduino environment not this library!  The Arduino Mega is not recommended as it does not reliably decode some jpeg images possibly due to a shortage of RAM.  The Due will work fine with much bigger image sets in FLASH.
 
