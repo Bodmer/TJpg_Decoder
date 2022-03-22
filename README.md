@@ -5,7 +5,7 @@ This Arduino library supports the rendering of Jpeg files stored both on SD card
 
 The library has been tested on the Arduino Due, ESP32 and ESP8266 (e.g. NodeMCU 1.0), STM32 and RP2040 processors. Other processors should work too if they have sufficient memory. Use with the ESP32 requires Arduino board package 2.0.0 or later.
 
-Jpeg files in the "Progressive" format (where image data is compressed in multiple passes with progressively higher detail) are not supported since this would require much more memory, or too many Inverse Discrete Cosine Transform's for typical embedded systems.
+Jpeg files must be in 24bit format (8 bit not supported). Jpeg files in the "Progressive" format (where image data is compressed in multiple passes with progressively higher detail) are not supported either since this would require much more memory.
 
 When storing the jpeg in a memory array bear in mind that some Arduino boards have a maximum 32767 byte limit for the maximum size of an array (32 KBytes minus 1 byte).
 
