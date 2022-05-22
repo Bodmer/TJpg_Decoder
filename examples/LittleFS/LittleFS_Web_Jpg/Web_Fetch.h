@@ -30,7 +30,8 @@ bool getFile(String url, String filename) {
     // Start connection and send HTTP header
     int httpCode = http.GET();
     if (httpCode > 0) {
-      fs::File f = LittleFS.open(filename, "w+");
+      fs::File f = LittleFS.open(filename, "w+");   // this line put here creates a 0Byte file when httpcode != 200. e.g. 404
+                                                    // Moreover, LittleFS.remove() does not remove this 0Byte file.
       if (!f) {
         Serial.println("file open failed");
         return 0;
