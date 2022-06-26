@@ -29,7 +29,7 @@ bool getFile(String url, String filename) {
     Serial.print("[HTTP] GET...\n");
     // Start connection and send HTTP header
     int httpCode = http.GET();
-    if (httpCode > 0) {
+    if (httpCode == 200) {
       fs::File f = LittleFS.open(filename, "w+");
       if (!f) {
         Serial.println("file open failed");
