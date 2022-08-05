@@ -234,7 +234,7 @@ JRESULT TJpg_Decoder::drawJpgFromStream(int32_t x, int32_t y, char* _url) {
 // Generic file call for SD or SPIFFS, uses leading / to distinguish SPIFFS files
 uint32_t TJpg_Decoder::getJpgSizeFromStream(char *_url){
    
-  if(!jpg_http->connected()){
+  if(!jpg_http){
     jpg_http = new HTTPClient;
     jpg_http->begin(_url);
     long httpCode = jpg_http->GET();
