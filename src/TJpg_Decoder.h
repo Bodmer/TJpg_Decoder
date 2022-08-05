@@ -17,7 +17,12 @@ https://github.com/Bodmer/TJpg_Decoder
   #include "Arduino.h"
   #include "tjpgd.h"
 
-  #if defined (ESP8266) || defined (ESP32)
+  #if defined (ESP8266) || defined (ESP32)   
+    #if defined (TJPGD_LOAD_HTTP_LIBRARY)
+      #include <WiFi.h>
+      #include <HTTPClient.h>   
+    #endif
+
     #include <pgmspace.h>
     #include <FS.h>
     #include <LittleFS.h>
@@ -56,6 +61,10 @@ private:
 #ifdef TJPGD_LOAD_FFS
   fs::File jpgFile;
 #endif
+	
+#if defined (TJPGD_LOAD_HTTP_LIBRARY)
+  HTTPClient* jpg_http = NULL;
+#endif
 
 public:
 
@@ -75,6 +84,11 @@ public:
 
   JRESULT getJpgSize(uint16_t *w, uint16_t *h, const char *pFilename);
   JRESULT getJpgSize(uint16_t *w, uint16_t *h, const String& pFilename);
+#endif
+	
+#if defined (TJPGD_LOAD_HTTP_LIBRARY)
+  JRESULT drawJpgFromHttp(int32_t x, int32_t y, char* http_stream);
+  JRESULT getJpgSize(uint16_t *w, uint16_t *h, char* http_stream);
 #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
