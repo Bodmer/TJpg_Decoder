@@ -89,7 +89,7 @@ public:
 	
 #if defined (TJPGD_LOAD_HTTP_LIBRARY)
   JRESULT drawJpgFromStream(int32_t x, int32_t y,  char* url) ;
-  uint32_t getJpgSizeFromStream(char* url);
+  JRESULT getJpgSizeFromStream(uint16_t *w, uint16_t *h, char* url);
 #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
@@ -97,7 +97,7 @@ public:
   JRESULT drawSdJpg (int32_t x, int32_t y, const String& pFilename);
   JRESULT drawSdJpg (int32_t x, int32_t y, File inFile);
 
-  JRESULT getSdJpgSize(uint16_t *w, uint16_t *h, const char *pFilename);
+  JRESULT getSdJpgSize(uint16_t *w, uint16_t *h,  const char *pFilename);
   JRESULT getSdJpgSize(uint16_t *w, uint16_t *h, const String& pFilename);
   JRESULT getSdJpgSize(uint16_t *w, uint16_t *h, File inFile);
 #endif
