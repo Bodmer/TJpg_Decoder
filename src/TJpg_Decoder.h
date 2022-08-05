@@ -44,7 +44,8 @@ https://github.com/Bodmer/TJpg_Decoder
 enum {
 	TJPG_ARRAY = 0,
 	TJPG_FS_FILE,
-	TJPG_SD_FILE
+	TJPG_SD_FILE,
+	STREAM_SD_FILE
 };
 
 //------------------------------------------------------------------------------
