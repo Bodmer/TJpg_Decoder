@@ -228,19 +228,34 @@ JRESULT TJpg_Decoder::drawJpgFromStream(int32_t x, int32_t y, char* _url) {
 }
 
 /***************************************************************************************
-** Function name:           getJpgSize
+** Function name:           getJpgSizeFromStream
 ** Description:             Get width and height of a jpg file (name in char array)
 ***************************************************************************************/
 // Generic file call for SD or SPIFFS, uses leading / to distinguish SPIFFS files
-uint32_t TJpg_Decoder::getJpgSizeFromStream(char *_url){
-   
-  if(!jpg_http){
+JRESULT TJpg_Decoder::getJpgSizeFromStream(uint16_t *w, uint16_t *h, char *_url){
+  
+  JDEC jdec;
+  JRESULT jresult = JDR_OK;
+
+  *w = 0;
+  *h = 0;
+
+  jpg_source = TJPG_STREAM_FILE;
+
+  if(!jpg_http||!jpg_http->connected()){
+Serial.println("get size");
     jpg_http = new HTTPClient;
     jpg_http->begin(_url);
     long httpCode = jpg_http->GET();
     if (httpCode == HTTP_CODE_OK) 
     {
       array_size = jpg_http->getSize();
+    }
+    jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
+
+    if (jresult == JDR_OK) {
+      *w = jdec.width;
+      *h = jdec.height;
     }
             
     if(jpg_http->connected())
@@ -253,7 +268,7 @@ uint32_t TJpg_Decoder::getJpgSizeFromStream(char *_url){
     delete jpg_http;
     jpg_http = NULL;
   }
-  return array_size;
+  return jresult;
 }
 
 #endif
