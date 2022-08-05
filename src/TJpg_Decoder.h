@@ -87,8 +87,8 @@ public:
 #endif
 	
 #if defined (TJPGD_LOAD_HTTP_LIBRARY)
-  JRESULT drawJpgFromHttp(int32_t x, int32_t y, char* http_stream);
-  JRESULT getJpgSize(uint16_t *w, uint16_t *h, char* http_stream);
+  JRESULT drawJpgFromStream(int32_t x, int32_t y,  char* url) ;
+  JRESULT getJpgSizeFromStream(uint16_t *w, uint16_t *h, char* url);
 #endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY)
