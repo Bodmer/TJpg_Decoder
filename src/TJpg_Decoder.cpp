@@ -239,6 +239,7 @@ JRESULT TJpg_Decoder::getJpgSizeFromStream(uint16_t *w, uint16_t *h, char *_url)
 
   *w = 0;
   *h = 0;
+  array_index = 0;
 
   jpg_source = TJPG_STREAM_FILE;
 
