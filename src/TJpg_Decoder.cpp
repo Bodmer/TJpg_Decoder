@@ -129,6 +129,29 @@ unsigned int TJpg_Decoder::jd_input(JDEC* jdec, uint8_t* buf, unsigned int len)
     }
   }
 #endif
+  
+#ifdef TJPGD_LOAD_HTTP_LIBRARY
+  else if (thisPtr->jpg_source ==  TJPG_STREAM_FILE)
+  {             
+    if (thisPtr->array_index + len > thisPtr->array_size) 
+    {
+      len = thisPtr->array_size - thisPtr->array_index;
+    }
+        
+    if(thisPtr->jpg_http->connected())
+    {
+      uint8_t _buff[len];
+      WiFiClient* const stream = thisPtr->jpg_http->getStreamPtr();
+      if (stream->available()) stream->readBytes(_buff, len);
+      yield();    
+      if (buf)
+      {
+        memcpy_P(buf,_buff,len);
+      }
+      thisPtr->array_index = thisPtr->array_index + len;
+    }
+  }
+#endif
 
   return len;
 }
@@ -155,6 +178,85 @@ int TJpg_Decoder::jd_output(JDEC* jdec, void* bitmap, JRECT* jrect)
   return thisPtr->tft_output(x, y, w, h, (uint16_t*)bitmap);
 }
 
+
+#if defined (TJPGD_LOAD_HTTP_LIBRARY)
+
+/***************************************************************************************
+** Function name:           drawJpg
+** Description:             Draw a named jpg file at x,y (name in char array)
+***************************************************************************************/
+
+JRESULT TJpg_Decoder::drawJpgFromStream(int32_t x, int32_t y, char* _url) {
+  JDEC jdec;
+  JRESULT jresult = JDR_OK;
+
+  jpg_source = TJPG_STREAM_FILE;
+
+  jpeg_x = x;
+  jpeg_y = y;
+  array_size  = 0;
+  array_index  = 0;
+
+  jdec.swap = _swap;        
+  jpg_http = new HTTPClient;
+  jpg_http->begin(_url);
+  long httpCode = jpg_http->GET();
+  if (httpCode == HTTP_CODE_OK) 
+  {
+    array_size = jpg_http->getSize();
+    Serial.println(array_size);
+    array_index = 0;
+  }
+            
+  // Analyse input data
+  jresult = jd_prepare(&jdec, jd_input, workspace, TJPGD_WORKSPACE_SIZE, 0);
+
+  // Extract image and render
+  if (jresult == JDR_OK)jresult = jd_decomp(&jdec, jd_output, jpgScale);
+  
+  if(jpg_http->connected())
+  {
+    WiFiClient* const stream = jpg_http->getStreamPtr();
+    stream->stop();
+    stream->flush();
+  }
+  jpg_http->end();
+  delete jpg_http;
+  jpg_http = NULL;
+
+  return jresult;
+}
+
+/***************************************************************************************
+** Function name:           getJpgSize
+** Description:             Get width and height of a jpg file (name in char array)
+***************************************************************************************/
+// Generic file call for SD or SPIFFS, uses leading / to distinguish SPIFFS files
+uint32_t TJpg_Decoder::getJpgSizeFromStream(char *_url){
+   
+  if(!jpg_http->connected()){
+    jpg_http = new HTTPClient;
+    jpg_http->begin(_url);
+    long httpCode = jpg_http->GET();
+    if (httpCode == HTTP_CODE_OK) 
+    {
+      array_size = jpg_http->getSize();
+    }
+            
+    if(jpg_http->connected())
+    {
+      WiFiClient* const stream = jpg_http->getStreamPtr();
+      stream->stop();
+      stream->flush();
+    }
+    jpg_http->end();
+    delete jpg_http;
+    jpg_http = NULL;
+  }
+  return array_size;
+}
+
+#endif
 
 #if defined (TJPGD_LOAD_SD_LIBRARY) || defined (TJPGD_LOAD_FFS)
 
