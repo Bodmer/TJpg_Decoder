@@ -20,8 +20,8 @@
 #include "SPI.h"
 #include <TFT_eSPI.h>              // Hardware-specific library
 TFT_eSPI tft = TFT_eSPI();         // Invoke custom library
-const char* ssid ="NETGEAR29_EXT";// "tobiswifi";//"NETGEAR29_EXT";
-const char* password = "curlypineapple194";//"92cca3b33957";//"curlypineapple194";
+const char* ssid ="ssid";// 
+const char* password = "password";//
 char* url = "https://upload.wikimedia.org/wikipedia/commons/0/00/Center_of_the_Milky_Way_Galaxy_IV_%E2%80%93_Composite.jpg";
 
 
