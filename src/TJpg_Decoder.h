@@ -17,7 +17,7 @@ https://github.com/Bodmer/TJpg_Decoder
   #include "Arduino.h"
   #include "tjpgd.h"
 
-  #if defined (ESP8266) || defined (ESP32)   
+  #if defined (ARDUINO_ARCH_ESP8266) || defined (ESP32) 
     #if defined (TJPGD_LOAD_HTTP_LIBRARY)
       #include <WiFi.h>
       #include <HTTPClient.h>   
