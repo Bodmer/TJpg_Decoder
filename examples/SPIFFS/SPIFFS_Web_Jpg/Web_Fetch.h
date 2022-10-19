@@ -15,7 +15,7 @@ bool getFile(String url, String filename) {
 
     Serial.print("[HTTP] begin...\n");
 
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
     std::unique_ptr<BearSSL::WiFiClientSecure>client(new BearSSL::WiFiClientSecure);
     client -> setInsecure();
     HTTPClient http;

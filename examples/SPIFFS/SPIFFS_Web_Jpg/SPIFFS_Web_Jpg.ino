@@ -18,7 +18,7 @@
 #include <FS.h>
 
 // Include WiFi and http client
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
   #include <ESP8266WiFi.h>
   #include <ESP8266HTTPClient.h>
   #include <ESP8266WiFiMulti.h>

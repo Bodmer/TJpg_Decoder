@@ -17,7 +17,7 @@ https://github.com/Bodmer/TJpg_Decoder
   #include "Arduino.h"
   #include "tjpgd.h"
 
-  #if defined (ESP8266) || defined (ESP32)
+  #if defined (ARDUINO_ARCH_ESP8266) || defined (ESP32)
     #include <pgmspace.h>
     #include <FS.h>
     #include <LittleFS.h>

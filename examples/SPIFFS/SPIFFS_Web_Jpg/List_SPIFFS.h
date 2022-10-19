@@ -2,7 +2,7 @@
 ** Function name:           listSPIFFS
 ** Description:             Listing SPIFFS files
 ***************************************************************************************/
-#ifdef ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
 void listSPIFFS(void) {
   Serial.println(F("\r\nListing SPIFFS files:"));
 
