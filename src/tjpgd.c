@@ -114,7 +114,7 @@ static const uint8_t Clip8[1024] = {
 
 #else	/* JD_TBLCLIP */
 
-static uint8_t BYTECLIP (int val)
+uint8_t BYTECLIP (int val)
 {
 	if (val < 0) return 0;
 	else if (val > 255) return 255;
